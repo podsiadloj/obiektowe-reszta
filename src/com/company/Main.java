@@ -7,7 +7,17 @@ import java.util.Vector;
 
 public class Main {
 
-    Coin[] values = {
+    private static class Coin {
+        int value;
+        boolean canMakeChange;
+
+        Coin(int value, boolean canMakeChange){
+            this.value = value;
+            this.canMakeChange = canMakeChange;
+        }
+    }
+
+    private static Coin[] values = {
         new Coin(200, false),
         new Coin(100, false),
         new Coin(50, false),
@@ -18,18 +28,7 @@ public class Main {
         new Coin(1, true)
     };
 
-    Coin getCoin(int value){
-        for (Coin coin : values) {
-            if(coin.value == value){return coin;}
-        }
-        return null;
-    }
-
-    public static void main(String[] args) {
-
-    }
-
-    int[] change(int price, int[] payment){
+    private static ArrayList<Integer> processPayment(int price, int[] payment){
         int remaining = price;
         ArrayList<Integer> overpaid = new ArrayList<>();
         Arrays.sort(payment);
@@ -37,28 +36,41 @@ public class Main {
             if(payment[i] <= remaining){
                 remaining -= payment[i];
             } else {
-
+                overpaid.add(payment[i]);
             }
         }
-
+        for (Integer o : overpaid) {
+            if(getCoin(o).canMakeChange){
+                overpaid.remove(o);
+                overpaid.addAll(change(o, remaining));
+                break;
+            }
+        }
+        return overpaid;
     }
 
-    class coinComparator implements Comparator<Coin>{
-        @Override
-        public int compare(Coin a, Coin b){
-            return a.value - b.value;
+    private static Coin getCoin(int value){
+        for (Coin coin : values) {
+            if(coin.value == value){return coin;}
         }
+        return null;
     }
 
-
-
-    class Coin {
-        public int value;
-        public boolean canMakeChange;
-
-        Coin(int value, boolean canMakeChange){
-            this.value = value;
-            this.canMakeChange = canMakeChange;
+    private static  ArrayList<Integer> change(Integer i, int remainder){
+        int remaining = i - remainder;
+        ArrayList<Integer> result = new ArrayList<>();
+        for (Coin coin : values) {
+            while(coin.value <= remaining){
+                result.add(coin.value);
+                remaining -= coin.value;
+            }
         }
+        return result;
+    }
+
+    public static void main(String[] args) {
+        int[] payment = {50, 50, 20, 20, 1};
+        int price = 124;
+        System.out.println(processPayment(price, payment));
     }
 }
